@@ -7,6 +7,7 @@
 package v1
 
 import (
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -468,14 +469,18 @@ var File_api_review_v1_review_proto protoreflect.FileDescriptor
 
 const file_api_review_v1_review_proto_rawDesc = "" +
 	"\n" +
-	"\x1aapi/review/v1/review.proto\x12\rapi.review.v1\x1a\x1cgoogle/api/annotations.proto\"\x95\x02\n" +
-	"\x13CreateReviewRequest\x12\x16\n" +
-	"\x06userId\x18\x01 \x01(\x03R\x06userId\x12\x18\n" +
-	"\aorderId\x18\x02 \x01(\x03R\aorderId\x12\x14\n" +
-	"\x05score\x18\x03 \x01(\x05R\x05score\x12\"\n" +
-	"\fserviceScore\x18\x04 \x01(\x05R\fserviceScore\x12\"\n" +
-	"\fexpressScore\x18\x05 \x01(\x05R\fexpressScore\x12\x18\n" +
-	"\acontent\x18\x06 \x01(\tR\acontent\x12\x18\n" +
+	"\x1aapi/review/v1/review.proto\x12\rapi.review.v1\x1a\x1cgoogle/api/annotations.proto\x1a\x17validate/validate.proto\"\xe6\x02\n" +
+	"\x13CreateReviewRequest\x12\x1f\n" +
+	"\x06userId\x18\x01 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\x06userId\x12!\n" +
+	"\aorderId\x18\x02 \x01(\x03B\a\xfaB\x04\"\x02 \x00R\aorderId\x12%\n" +
+	"\x05score\x18\x03 \x01(\x05B\x0f\xfaB\f\x1a\n" +
+	"0\x010\x020\x030\x040\x05R\x05score\x123\n" +
+	"\fserviceScore\x18\x04 \x01(\x05B\x0f\xfaB\f\x1a\n" +
+	"0\x010\x020\x030\x040\x05R\fserviceScore\x123\n" +
+	"\fexpressScore\x18\x05 \x01(\x05B\x0f\xfaB\f\x1a\n" +
+	"0\x010\x020\x030\x040\x05R\fexpressScore\x12$\n" +
+	"\acontent\x18\x06 \x01(\tB\n" +
+	"\xfaB\ar\x05\x10\b\x18\xff\x01R\acontent\x12\x18\n" +
 	"\apicInfo\x18\a \x01(\tR\apicInfo\x12\x1c\n" +
 	"\tvideoInfo\x18\b \x01(\tR\tvideoInfo\x12\x1c\n" +
 	"\tanonymous\x18\t \x01(\bR\tanonymous\"/\n" +

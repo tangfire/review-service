@@ -21,8 +21,25 @@ func NewReviewService(uc *biz.ReviewUsecase) *ReviewService {
 
 func (s *ReviewService) CreateReview(ctx context.Context, req *pb.CreateReviewRequest) (*pb.CreateReviewReply, error) {
 	fmt.Printf("[service] CreateReview, req:%+v\n", req)
+	// 参数转换
+
 	// 调用biz层
-	review, err := s.uc.CreateReview(ctx, &model.ReviewInfo{})
+	var anonymous int32 = 0
+	if req.Anonymous {
+		anonymous = 1
+	}
+	review, err := s.uc.CreateReview(ctx, &model.ReviewInfo{
+		UserID:       req.UserId,
+		OrderID:      req.OrderId,
+		Score:        req.Score,
+		ServiceScore: req.ServiceScore,
+		ExpressScore: req.ExpressScore,
+		Content:      req.Content,
+		PicInfo:      req.PicInfo,
+		VideoInfo:    req.VideoInfo,
+		Anonymous:    anonymous,
+		Status:       0,
+	})
 
 	// 拼装返回结果
 	return &pb.CreateReviewReply{ReviewId: review.ReviewID}, err

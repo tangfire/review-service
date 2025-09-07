@@ -28,8 +28,8 @@ type ReviewInfo struct {
 	OrderID        int64      `gorm:"column:order_id;not null;comment:订单id" json:"order_id"`                                // 订单id
 	SkuID          int64      `gorm:"column:sku_id;not null;comment:sku id" json:"sku_id"`                                  // sku id
 	SpuID          int64      `gorm:"column:spu_id;not null;comment:spu id" json:"spu_id"`                                  // spu id
-	StoreID        *int64     `gorm:"column:store_id;comment:店铺id" json:"store_id"`                                         // 店铺id
-	UserID         *int64     `gorm:"column:user_id;comment:用户id" json:"user_id"`                                           // 用户id
+	StoreID        int64      `gorm:"column:store_id;not null;comment:店铺id" json:"store_id"`                                // 店铺id
+	UserID         int64      `gorm:"column:user_id;not null;comment:用户id" json:"user_id"`                                  // 用户id
 	Anonymous      int32      `gorm:"column:anonymous;not null;comment:是否匿名" json:"anonymous"`                              // 是否匿名
 	Tags           string     `gorm:"column:tags;not null;comment:标签json" json:"tags"`                                      // 标签json
 	PicInfo        string     `gorm:"column:pic_info;not null;comment:媒体信息: 图片" json:"pic_info"`                            // 媒体信息: 图片
