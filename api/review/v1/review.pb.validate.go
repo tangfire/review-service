@@ -337,6 +337,449 @@ var _ interface {
 	ErrorName() string
 } = CreateReviewReplyValidationError{}
 
+// Validate checks the field values on TestConnRequest with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *TestConnRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on TestConnRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// TestConnRequestMultiError, or nil if none found.
+func (m *TestConnRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *TestConnRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return TestConnRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// TestConnRequestMultiError is an error wrapping multiple validation errors
+// returned by TestConnRequest.ValidateAll() if the designated constraints
+// aren't met.
+type TestConnRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m TestConnRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m TestConnRequestMultiError) AllErrors() []error { return m }
+
+// TestConnRequestValidationError is the validation error returned by
+// TestConnRequest.Validate if the designated constraints aren't met.
+type TestConnRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e TestConnRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e TestConnRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e TestConnRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e TestConnRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e TestConnRequestValidationError) ErrorName() string { return "TestConnRequestValidationError" }
+
+// Error satisfies the builtin error interface
+func (e TestConnRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sTestConnRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = TestConnRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = TestConnRequestValidationError{}
+
+// Validate checks the field values on ReplyReviewRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ReplyReviewRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ReplyReviewRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ReplyReviewRequestMultiError, or nil if none found.
+func (m *ReplyReviewRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReplyReviewRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if m.GetReviewId() <= 0 {
+		err := ReplyReviewRequestValidationError{
+			field:  "ReviewId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if m.GetStoreId() <= 0 {
+		err := ReplyReviewRequestValidationError{
+			field:  "StoreId",
+			reason: "value must be greater than 0",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	if l := utf8.RuneCountInString(m.GetContent()); l < 2 || l > 200 {
+		err := ReplyReviewRequestValidationError{
+			field:  "Content",
+			reason: "value length must be between 2 and 200 runes, inclusive",
+		}
+		if !all {
+			return err
+		}
+		errors = append(errors, err)
+	}
+
+	// no validation rules for PicInfo
+
+	// no validation rules for VideoInfo
+
+	if len(errors) > 0 {
+		return ReplyReviewRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReplyReviewRequestMultiError is an error wrapping multiple validation errors
+// returned by ReplyReviewRequest.ValidateAll() if the designated constraints
+// aren't met.
+type ReplyReviewRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReplyReviewRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReplyReviewRequestMultiError) AllErrors() []error { return m }
+
+// ReplyReviewRequestValidationError is the validation error returned by
+// ReplyReviewRequest.Validate if the designated constraints aren't met.
+type ReplyReviewRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReplyReviewRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReplyReviewRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReplyReviewRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReplyReviewRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReplyReviewRequestValidationError) ErrorName() string {
+	return "ReplyReviewRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ReplyReviewRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReplyReviewRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReplyReviewRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReplyReviewRequestValidationError{}
+
+// Validate checks the field values on ReplyReviewReply with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// first error encountered is returned, or nil if there are no violations.
+func (m *ReplyReviewReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ReplyReviewReply with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ReplyReviewReplyMultiError, or nil if none found.
+func (m *ReplyReviewReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReplyReviewReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for ReplyId
+
+	if len(errors) > 0 {
+		return ReplyReviewReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReplyReviewReplyMultiError is an error wrapping multiple validation errors
+// returned by ReplyReviewReply.ValidateAll() if the designated constraints
+// aren't met.
+type ReplyReviewReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReplyReviewReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReplyReviewReplyMultiError) AllErrors() []error { return m }
+
+// ReplyReviewReplyValidationError is the validation error returned by
+// ReplyReviewReply.Validate if the designated constraints aren't met.
+type ReplyReviewReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReplyReviewReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReplyReviewReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReplyReviewReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReplyReviewReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReplyReviewReplyValidationError) ErrorName() string { return "ReplyReviewReplyValidationError" }
+
+// Error satisfies the builtin error interface
+func (e ReplyReviewReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReplyReviewReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReplyReviewReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReplyReviewReplyValidationError{}
+
+// Validate checks the field values on TestConnReply with the rules defined in
+// the proto definition for this message. If any rules are violated, the first
+// error encountered is returned, or nil if there are no violations.
+func (m *TestConnReply) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on TestConnReply with the rules defined
+// in the proto definition for this message. If any rules are violated, the
+// result is a list of violation errors wrapped in TestConnReplyMultiError, or
+// nil if none found.
+func (m *TestConnReply) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *TestConnReply) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	// no validation rules for Pong
+
+	if len(errors) > 0 {
+		return TestConnReplyMultiError(errors)
+	}
+
+	return nil
+}
+
+// TestConnReplyMultiError is an error wrapping multiple validation errors
+// returned by TestConnReply.ValidateAll() if the designated constraints
+// aren't met.
+type TestConnReplyMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m TestConnReplyMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m TestConnReplyMultiError) AllErrors() []error { return m }
+
+// TestConnReplyValidationError is the validation error returned by
+// TestConnReply.Validate if the designated constraints aren't met.
+type TestConnReplyValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e TestConnReplyValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e TestConnReplyValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e TestConnReplyValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e TestConnReplyValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e TestConnReplyValidationError) ErrorName() string { return "TestConnReplyValidationError" }
+
+// Error satisfies the builtin error interface
+func (e TestConnReplyValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sTestConnReply.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = TestConnReplyValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = TestConnReplyValidationError{}
+
 // Validate checks the field values on UpdateReviewRequest with the rules
 // defined in the proto definition for this message. If any rules are
 // violated, the first error encountered is returned, or nil if there are no violations.

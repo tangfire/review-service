@@ -40,10 +40,38 @@ func (s *ReviewService) CreateReview(ctx context.Context, req *pb.CreateReviewRe
 		Anonymous:    anonymous,
 		Status:       0,
 	})
+	if err != nil {
+		return nil, err
+	}
 
 	// 拼装返回结果
-	return &pb.CreateReviewReply{ReviewId: review.ReviewID}, err
+	return &pb.CreateReviewReply{ReviewId: review.ReviewID}, nil
 }
+
+func (s *ReviewService) ReplyReview(ctx context.Context, req *pb.ReplyReviewRequest) (*pb.ReplyReviewReply, error) {
+	fmt.Printf("[service] ReplyReview, req:%+v\n", req)
+
+	// 调用biz层
+	reply, err := s.uc.CreateReply(ctx, &biz.ReplyParam{
+		ReviewId:  req.GetReviewId(),
+		StoreId:   req.GetStoreId(),
+		Content:   req.GetContent(),
+		PicInfo:   req.GetPicInfo(),
+		VideoInfo: req.GetVideoInfo(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.ReplyReviewReply{ReplyId: reply.ReplyID}, nil
+
+}
+
+func (s *ReviewService) TestConn(context.Context, *pb.TestConnRequest) (*pb.TestConnReply, error) {
+	return &pb.TestConnReply{
+		Pong: "pong!",
+	}, nil
+}
+
 func (s *ReviewService) UpdateReview(ctx context.Context, req *pb.UpdateReviewRequest) (*pb.UpdateReviewReply, error) {
 	return &pb.UpdateReviewReply{}, nil
 }
