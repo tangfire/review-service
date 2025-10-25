@@ -29,14 +29,14 @@ func (s *ReviewService) CreateReview(ctx context.Context, req *pb.CreateReviewRe
 		anonymous = 1
 	}
 	review, err := s.uc.CreateReview(ctx, &model.ReviewInfo{
-		UserID:       req.UserId,
-		OrderID:      req.OrderId,
-		Score:        req.Score,
-		ServiceScore: req.ServiceScore,
-		ExpressScore: req.ExpressScore,
-		Content:      req.Content,
-		PicInfo:      req.PicInfo,
-		VideoInfo:    req.VideoInfo,
+		UserID:       req.GetUserId(),
+		OrderID:      req.GetOrderId(),
+		Score:        req.GetScore(),
+		ServiceScore: req.GetServiceScore(),
+		ExpressScore: req.GetExpressScore(),
+		Content:      req.GetContent(),
+		PicInfo:      req.GetPicInfo(),
+		VideoInfo:    req.GetVideoInfo(),
 		Anonymous:    anonymous,
 		Status:       0,
 	})
@@ -64,6 +64,39 @@ func (s *ReviewService) ReplyReview(ctx context.Context, req *pb.ReplyReviewRequ
 	}
 	return &pb.ReplyReviewReply{ReplyId: reply.ReplyID}, nil
 
+}
+
+func (s *ReviewService) AppealReview(ctx context.Context, req *pb.AppealReviewRequest) (*pb.AppealReviewReply, error) {
+	fmt.Printf("[service] AppealReview, req:%+v\n", req)
+	ret, err := s.uc.CreateAppeal(ctx, &biz.AppealParam{
+		ReviewId:  req.GetReviewId(),
+		StoreId:   req.GetStoreId(),
+		Content:   req.GetContent(),
+		PicInfo:   req.GetPicInfo(),
+		VideoInfo: req.GetVideoInfo(),
+		OpUser:    req.GetOpUser(),
+		Reason:    req.GetReason(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return &pb.AppealReviewReply{AppealId: ret.AppealID}, nil
+}
+
+func (s *ReviewService) AuditAppeal(ctx context.Context, req *pb.AuditAppealRequest) (*pb.AuditAppealReply, error) {
+	fmt.Printf("[service] AuditAppeal, req:%+v\n", req)
+	var resp *pb.AuditAppealReply
+	err := s.uc.UpdateAppeal(ctx, &biz.AppealParam{
+		AppealId: req.GetAppealId(),
+		ReviewId: req.GetReviewId(),
+		Status:   req.GetStatus(),
+		OpUser:   req.GetOpUser(),
+		Reason:   req.GetOpReason(),
+	})
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
 }
 
 func (s *ReviewService) TestConn(context.Context, *pb.TestConnRequest) (*pb.TestConnReply, error) {

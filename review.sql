@@ -109,5 +109,6 @@ CREATE TABLE `review_appeal_info` (
                                       KEY `idx_appeal_id` (`appeal_id`) COMMENT '申诉id索引',
                                       KEY `idx_review_id` (`review_id`) COMMENT '评价id索引',
                                       KEY `idx_store_id` (`store_id`) COMMENT '店铺id索引',
+                                        UNIQUE KEY `uk_review_id` (`review_id`) COMMENT '评价id索引',
                                       KEY `idx_status` (`status`) COMMENT '状态索引'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='评价商家申诉表';

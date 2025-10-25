@@ -44,3 +44,13 @@ message Data {
 message Snowflake{
   int64 machine_id = 1;
 }
+
+
+message Registry{
+  message Consul{
+    string address = 1;
+    string scheme = 2;
+  }
+
+  Consul consul = 1;
+}

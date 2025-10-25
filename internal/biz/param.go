@@ -8,3 +8,15 @@ type ReplyParam struct {
 	PicInfo   string
 	VideoInfo string
 }
+
+type AppealParam struct {
+	AppealId  int64
+	ReviewId  int64
+	StoreId   int64
+	Content   string
+	Status    int32
+	PicInfo   string
+	VideoInfo string
+	OpUser    string
+	Reason    string
+}

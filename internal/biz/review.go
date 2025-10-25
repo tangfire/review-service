@@ -2,7 +2,8 @@ package biz
 
 import (
 	"context"
-	v1 "review-service/api/review/v1"
+	"errors"
+	"fmt"
 	"review-service/pkg/snowflake"
 
 	"github.com/go-kratos/kratos/v2/log"
@@ -13,6 +14,8 @@ type ReviewRepo interface {
 	SaveReview(context.Context, *model.ReviewInfo) (*model.ReviewInfo, error)
 	GetReviewByOrderId(context.Context, int64) ([]*model.ReviewInfo, error)
 	SaveReply(ctx context.Context, info *model.ReviewReplyInfo) (*model.ReviewReplyInfo, error)
+	SaveAppeal(ctx context.Context, info *model.ReviewAppealInfo) (*model.ReviewAppealInfo, error)
+	UpdateAppeal(ctx context.Context, info *model.ReviewAppealInfo) error
 }
 
 type ReviewUsecase struct {
@@ -35,11 +38,11 @@ func (uc *ReviewUsecase) CreateReview(ctx context.Context, review *model.ReviewI
 	// 1.2 参数业务校验: 带业务逻辑的参数校验，比如已经评价过的订单不能再创建评价
 	reviews, err := uc.repo.GetReviewByOrderId(ctx, review.OrderID)
 	if err != nil {
-		return nil, v1.ErrorDbFailed("查询数据库失败")
+		return nil, errors.New("查询数据库失败")
 	}
 	if len(reviews) > 0 {
 		// 已经评价过
-		return nil, v1.ErrorOrderReview("订单:%d已评价", review.OrderID)
+		return nil, errors.New(fmt.Sprintf("订单:%d已评价", review.OrderID))
 	}
 	// 2. 生成review Id
 	// 这里可以使用雪花算法自己生成
@@ -66,4 +69,33 @@ func (uc *ReviewUsecase) CreateReply(ctx context.Context, param *ReplyParam) (*m
 		VideoInfo: param.VideoInfo,
 	}
 	return uc.repo.SaveReply(ctx, reply)
+}
+
+func (uc *ReviewUsecase) CreateAppeal(ctx context.Context, param *AppealParam) (*model.ReviewAppealInfo, error) {
+	uc.log.WithContext(ctx).Debugf("[biz] CreateAppeal, param:%+v", param)
+	appeal := &model.ReviewAppealInfo{
+		ReviewID:  param.ReviewId,
+		StoreID:   param.StoreId,
+		Content:   param.Content,
+		PicInfo:   param.PicInfo,
+		VideoInfo: param.VideoInfo,
+		OpUser:    param.OpUser,
+		Reason:    param.Reason,
+		Status:    PendingReview,
+	}
+
+	return uc.repo.SaveAppeal(ctx, appeal)
+
+}
+
+func (uc *ReviewUsecase) UpdateAppeal(ctx context.Context, param *AppealParam) error {
+	uc.log.WithContext(ctx).Debugf("[biz] UpdateAppeal, param:%+v", param)
+	appeal := &model.ReviewAppealInfo{
+		AppealID: param.AppealId,
+		ReviewID: param.ReviewId,
+		OpUser:   param.OpUser,
+		Reason:   param.Reason,
+		Status:   param.Status,
+	}
+	return uc.repo.UpdateAppeal(ctx, appeal)
 }

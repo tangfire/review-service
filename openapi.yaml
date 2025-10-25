@@ -75,8 +75,98 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/Status'
+    business/v1/review/appeal:
+        post:
+            tags:
+                - Review
+            description: 商家申述评价
+            operationId: Review_AppealReview
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AppealReviewRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AppealReviewReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    operation/v1/api/http:
+        post:
+            tags:
+                - Review
+            operationId: Review_AuditAppeal
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AuditAppealRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AuditAppealReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
 components:
     schemas:
+        AppealReviewReply:
+            type: object
+            properties:
+                appealId:
+                    type: string
+        AppealReviewRequest:
+            type: object
+            properties:
+                reviewId:
+                    type: string
+                storeId:
+                    type: string
+                content:
+                    type: string
+                picInfo:
+                    type: string
+                videoInfo:
+                    type: string
+                opUser:
+                    type: string
+                reason:
+                    type: string
+        AuditAppealReply:
+            type: object
+            properties: {}
+        AuditAppealRequest:
+            type: object
+            properties:
+                appealId:
+                    type: string
+                reviewId:
+                    type: string
+                status:
+                    type: integer
+                    format: int32
+                opUser:
+                    type: string
+                opReason:
+                    type: string
+                opRemarks:
+                    type: string
         CreateReviewReply:
             type: object
             properties:

@@ -3,8 +3,10 @@ package data
 import (
 	"context"
 	"errors"
+	"gorm.io/gorm"
 	"review-service/internal/data/model"
 	"review-service/internal/data/query"
+	"review-service/pkg/snowflake"
 
 	"review-service/internal/biz"
 
@@ -43,7 +45,7 @@ func (r *reviewRepo) SaveReply(ctx context.Context, reply *model.ReviewReplyInfo
 	// 1. 数据校验
 	// 1.1 数据合法性校验(已回复的评价不允许商家再次回复)
 	// 先用评价ID查库，看下是否已回复
-	review, err := r.data.query.ReviewInfo.WithContext(ctx).Where(r.data.query.ReviewInfo.ReviewID.Eq(reply.ReplyID)).First()
+	review, err := r.data.query.ReviewInfo.WithContext(ctx).Where(r.data.query.ReviewInfo.ReviewID.Eq(reply.ReviewID)).First()
 	if err != nil {
 		return nil, err
 	}
@@ -68,7 +70,7 @@ func (r *reviewRepo) SaveReply(ctx context.Context, reply *model.ReviewReplyInfo
 			return err
 		}
 		// 评价表更新hasReply字段
-		if _, err := tx.ReviewInfo.WithContext(ctx).Where(tx.ReviewInfo.ReviewID.Eq(reply.ReplyID)).Update(tx.ReviewInfo.HasReply, 1); err != nil {
+		if _, err := tx.ReviewInfo.WithContext(ctx).Where(tx.ReviewInfo.ReviewID.Eq(reply.ReviewID)).Update(tx.ReviewInfo.HasReply, 1); err != nil {
 			r.log.WithContext(ctx).Errorf("SaveReply update reply fail,err:%v", err)
 			return err
 		}
@@ -78,4 +80,86 @@ func (r *reviewRepo) SaveReply(ctx context.Context, reply *model.ReviewReplyInfo
 	// 3. 返回
 	return reply, err
 
+}
+
+func (r *reviewRepo) SaveAppeal(ctx context.Context, info *model.ReviewAppealInfo) (*model.ReviewAppealInfo, error) {
+	var err error
+	_, err = r.data.query.ReviewInfo.WithContext(ctx).Where(
+		query.ReviewInfo.ReviewID.Eq(info.ReviewID),
+		query.ReviewInfo.StoreID.Eq(info.StoreID)).First()
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		return nil, errors.New("评价不存在或不属于该商店")
+	}
+	if err != nil {
+		r.log.WithContext(ctx).Errorf("SaveAppeal|查询评价失败, reviewID:%d, storeID:%d, err:%v",
+			info.ReviewID, info.StoreID, err)
+		return nil, err
+	}
+	// 先查询有没有申述
+	ret, err := r.data.query.ReviewAppealInfo.WithContext(ctx).Where(
+		query.ReviewAppealInfo.ReviewID.Eq(info.ReviewID),
+		query.ReviewAppealInfo.StoreID.Eq(info.StoreID),
+	).First()
+	if err != nil && !errors.Is(err, gorm.ErrRecordNotFound) {
+		r.log.WithContext(ctx).Errorf("SaveAppeal|First fail,data:%v,err:%v", info, err)
+		return nil, err
+	}
+	// 查询不到审核过的申述记录
+	if ret != nil {
+		if ret.Status > 10 {
+			return nil, errors.New("该评价已有审核过的申述记录")
+		}
+		// 1. 有申述记录但是处于待审核状态,需要更新
+		_, err = r.data.query.ReviewAppealInfo.WithContext(ctx).
+			Where(r.data.query.ReviewAppealInfo.ReviewID.Eq(info.ReviewID)).
+			UpdateColumns(map[string]interface{}{
+				"status":     info.Status,
+				"content":    info.Content,
+				"reason":     info.Reason,
+				"pic_info":   info.PicInfo,
+				"video_info": info.VideoInfo,
+			})
+		if err != nil {
+			r.log.WithContext(ctx).Errorf("SaveAppeal|UpdateColumns fail,err:%v", err)
+			return nil, err
+		}
+		return ret, nil
+
+	}
+	// 2. 没有申述记录,需要创建
+	info.AppealID = snowflake.GenerateID()
+	err = r.data.query.ReviewAppealInfo.WithContext(ctx).Save(info)
+	if err != nil {
+		r.log.WithContext(ctx).Errorf("SaveAppeal|Save fail,err:%v", err)
+		return nil, err
+	}
+	return info, nil
+
+}
+
+func (r *reviewRepo) UpdateAppeal(ctx context.Context, info *model.ReviewAppealInfo) error {
+	var err error
+	err = r.data.query.Transaction(func(tx *query.Query) error {
+		_, err = tx.ReviewAppealInfo.WithContext(ctx).Where(r.data.query.ReviewAppealInfo.AppealID.Eq(info.AppealID)).
+			UpdateColumns(map[string]interface{}{
+				"status":  info.Status,
+				"op_user": info.OpUser,
+				"reason":  info.Reason,
+			})
+		if err != nil {
+			r.log.WithContext(ctx).Errorf("SaveAppeal|UpdateColumns fail,err:%v", err)
+			return err
+		}
+		if info.Status == biz.Approved {
+			_, err = tx.ReviewInfo.WithContext(ctx).Where(tx.ReviewInfo.ReviewID.Eq(info.ReviewID)).UpdateColumns(map[string]interface{}{
+				"status": biz.Hidden,
+			})
+			if err != nil {
+				r.log.WithContext(ctx).Errorf("SaveAppeal|UpdateColumns fail,err:%v", err)
+				return err
+			}
+		}
+		return nil
+	})
+	return err
 }
