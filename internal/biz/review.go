@@ -5,6 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"review-service/pkg/snowflake"
+	"strings"
+	"time"
 
 	"github.com/go-kratos/kratos/v2/log"
 	"review-service/internal/data/model"
@@ -16,6 +18,7 @@ type ReviewRepo interface {
 	SaveReply(ctx context.Context, info *model.ReviewReplyInfo) (*model.ReviewReplyInfo, error)
 	SaveAppeal(ctx context.Context, info *model.ReviewAppealInfo) (*model.ReviewAppealInfo, error)
 	UpdateAppeal(ctx context.Context, info *model.ReviewAppealInfo) error
+	ListReviewByStoreId(ctx context.Context, storeId int64, offset, limit int) ([]*MyReviewInfo, error)
 }
 
 type ReviewUsecase struct {
@@ -98,4 +101,69 @@ func (uc *ReviewUsecase) UpdateAppeal(ctx context.Context, param *AppealParam) e
 		Status:   param.Status,
 	}
 	return uc.repo.UpdateAppeal(ctx, appeal)
+}
+
+func (uc *ReviewUsecase) ListReviewByStoreId(ctx context.Context, storeId int64, page, size int) ([]*MyReviewInfo, error) {
+	uc.log.WithContext(ctx).Debugf("[biz] ListReviewByStoreId")
+	if page <= 0 {
+		page = 1
+	}
+	if size <= 0 || size > 50 {
+		size = 10
+	}
+	offset := (page - 1) * size
+	limit := size
+	uc.log.WithContext(ctx).Debugf("[biz] ListReviewByStoreId:%v", storeId)
+	return uc.repo.ListReviewByStoreId(ctx, storeId, offset, limit)
+
+}
+
+type MyReviewInfo struct {
+	*model.ReviewInfo
+	CreateAt     MyTime `json:"create_at"`
+	UpdateAt     MyTime `json:"update_at"`
+	Anonymous    int32  `json:"anonymous,string"`
+	Score        int32  `json:"score,string"`
+	ServiceScore int32  `json:"service_score,string"`
+	ExpressScore int32  `json:"express_score,string"`
+	HasMedia     int32  `json:"has_media,string"`
+	Status       int32  `json:"status,string"`
+	IsDefault    int32  `json:"is_default,string"`
+	HasReply     int32  `json:"has_reply,string"`
+	ID           int64  `json:"id,string"`
+	Version      int32  `json:"version,string"`
+	ReviewID     int64  `json:"review_id,string"`
+	OrderID      int64  `json:"order_id,string"`
+	SkuID        int64  `json:"sku_id,string"`
+	SpuID        int64  `json:"spu_id,string"`
+	StoreID      int64  `json:"store_id,string"`
+	UserID       int64  `json:"user_id,string"`
+}
+
+type MyTime time.Time
+
+// UnmarshalJSON 自定义时间解析
+func (t *MyTime) UnmarshalJSON(data []byte) error {
+	// 去除JSON字符串的引号
+	timeStr := strings.Trim(string(data), `"`)
+
+	// 如果时间是空值，设置为零值
+	if timeStr == "" || timeStr == "null" {
+		*t = MyTime(time.Time{})
+		return nil
+	}
+
+	// 尝试多种可能的时间格式
+	var parsedTime time.Time
+	var err error
+
+	// 格式1: "2025-11-02 05:41:02" (你遇到的格式)
+	parsedTime, err = time.Parse(time.DateTime, timeStr)
+	if err != nil {
+		return fmt.Errorf("无法解析时间字符串: %s, 错误: %v", timeStr, err)
+	}
+
+	*t = MyTime(parsedTime)
+	return nil
+
 }

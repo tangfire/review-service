@@ -2,7 +2,10 @@ package data
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
+	"fmt"
+	"github.com/elastic/go-elasticsearch/v8/typedapi/types"
 	"gorm.io/gorm"
 	"review-service/internal/data/model"
 	"review-service/internal/data/query"
@@ -162,4 +165,39 @@ func (r *reviewRepo) UpdateAppeal(ctx context.Context, info *model.ReviewAppealI
 		return nil
 	})
 	return err
+}
+
+// ListReviewByStoreId 根据storeId 分页查询评价
+func (r *reviewRepo) ListReviewByStoreId(ctx context.Context, storeId int64, offset, limit int) ([]*biz.MyReviewInfo, error) {
+	// 去ES里面查询评价
+	resp, err := r.data.es.Search().Index("review").From(offset).Size(limit).
+		Query(&types.Query{
+			Bool: &types.BoolQuery{
+				Filter: []types.Query{
+					{
+						Term: map[string]types.TermQuery{
+							"store_id": {Value: storeId},
+						},
+					},
+				},
+			},
+		}).Do(ctx)
+	if err != nil {
+		r.log.WithContext(ctx).Errorf("ListReviewByStoreId fail,err:%v", err)
+		return nil, err
+	}
+	fmt.Printf("es result total:%v\n", resp.Hits.Total.Value)
+	//b, _ := json.Marshal(resp.Hits.Hits)
+	//fmt.Printf("es result:%v\n", b)
+	// 反序列化数据
+	list := make([]*biz.MyReviewInfo, 0, resp.Hits.Total.Value)
+	for _, hit := range resp.Hits.Hits {
+		tmp := &biz.MyReviewInfo{}
+		if err := json.Unmarshal(hit.Source_, tmp); err != nil {
+			r.log.Errorf("ListReviewByStoreId fail,err:%v", err)
+			continue
+		}
+		list = append(list, tmp)
+	}
+	return list, nil
 }

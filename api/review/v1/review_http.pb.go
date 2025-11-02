@@ -2,7 +2,7 @@
 // versions:
 // - protoc-gen-go-http v2.8.4
 // - protoc             v3.20.3
-// source: review/v1/review.proto
+// source: api/review/v1/review.proto
 
 package v1
 
@@ -22,6 +22,7 @@ const _ = http.SupportPackageIsVersion1
 const OperationReviewAppealReview = "/api.review.v1.Review/AppealReview"
 const OperationReviewAuditAppeal = "/api.review.v1.Review/AuditAppeal"
 const OperationReviewCreateReview = "/api.review.v1.Review/CreateReview"
+const OperationReviewListReviewByStoreId = "/api.review.v1.Review/ListReviewByStoreId"
 const OperationReviewReplyReview = "/api.review.v1.Review/ReplyReview"
 const OperationReviewTestConn = "/api.review.v1.Review/TestConn"
 
@@ -31,6 +32,8 @@ type ReviewHTTPServer interface {
 	AuditAppeal(context.Context, *AuditAppealRequest) (*AuditAppealReply, error)
 	// CreateReview 创建评价
 	CreateReview(context.Context, *CreateReviewRequest) (*CreateReviewReply, error)
+	// ListReviewByStoreId 根据商家Id查询评价列表(分页)
+	ListReviewByStoreId(context.Context, *ListReviewByStoreIdRequest) (*ListReviewByStoreIdReply, error)
 	// ReplyReview B端回复评价
 	ReplyReview(context.Context, *ReplyReviewRequest) (*ReplyReviewReply, error)
 	TestConn(context.Context, *TestConnRequest) (*TestConnReply, error)
@@ -43,6 +46,7 @@ func RegisterReviewHTTPServer(s *http.Server, srv ReviewHTTPServer) {
 	r.POST("/v1/review/reply", _Review_ReplyReview0_HTTP_Handler(srv))
 	r.POST("/v1/review/appeal", _Review_AppealReview0_HTTP_Handler(srv))
 	r.POST("/v1/review/audit_appeal", _Review_AuditAppeal0_HTTP_Handler(srv))
+	r.POST("/v1/review/list_by_store_id", _Review_ListReviewByStoreId0_HTTP_Handler(srv))
 }
 
 func _Review_CreateReview0_HTTP_Handler(srv ReviewHTTPServer) func(ctx http.Context) error {
@@ -152,10 +156,33 @@ func _Review_AuditAppeal0_HTTP_Handler(srv ReviewHTTPServer) func(ctx http.Conte
 	}
 }
 
+func _Review_ListReviewByStoreId0_HTTP_Handler(srv ReviewHTTPServer) func(ctx http.Context) error {
+	return func(ctx http.Context) error {
+		var in ListReviewByStoreIdRequest
+		if err := ctx.Bind(&in); err != nil {
+			return err
+		}
+		if err := ctx.BindQuery(&in); err != nil {
+			return err
+		}
+		http.SetOperation(ctx, OperationReviewListReviewByStoreId)
+		h := ctx.Middleware(func(ctx context.Context, req interface{}) (interface{}, error) {
+			return srv.ListReviewByStoreId(ctx, req.(*ListReviewByStoreIdRequest))
+		})
+		out, err := h(ctx, &in)
+		if err != nil {
+			return err
+		}
+		reply := out.(*ListReviewByStoreIdReply)
+		return ctx.Result(200, reply)
+	}
+}
+
 type ReviewHTTPClient interface {
 	AppealReview(ctx context.Context, req *AppealReviewRequest, opts ...http.CallOption) (rsp *AppealReviewReply, err error)
 	AuditAppeal(ctx context.Context, req *AuditAppealRequest, opts ...http.CallOption) (rsp *AuditAppealReply, err error)
 	CreateReview(ctx context.Context, req *CreateReviewRequest, opts ...http.CallOption) (rsp *CreateReviewReply, err error)
+	ListReviewByStoreId(ctx context.Context, req *ListReviewByStoreIdRequest, opts ...http.CallOption) (rsp *ListReviewByStoreIdReply, err error)
 	ReplyReview(ctx context.Context, req *ReplyReviewRequest, opts ...http.CallOption) (rsp *ReplyReviewReply, err error)
 	TestConn(ctx context.Context, req *TestConnRequest, opts ...http.CallOption) (rsp *TestConnReply, err error)
 }
@@ -199,6 +226,19 @@ func (c *ReviewHTTPClientImpl) CreateReview(ctx context.Context, in *CreateRevie
 	pattern := "/v1/review/add"
 	path := binding.EncodeURL(pattern, in, false)
 	opts = append(opts, http.Operation(OperationReviewCreateReview))
+	opts = append(opts, http.PathTemplate(pattern))
+	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return &out, nil
+}
+
+func (c *ReviewHTTPClientImpl) ListReviewByStoreId(ctx context.Context, in *ListReviewByStoreIdRequest, opts ...http.CallOption) (*ListReviewByStoreIdReply, error) {
+	var out ListReviewByStoreIdReply
+	pattern := "/v1/review/list_by_store_id"
+	path := binding.EncodeURL(pattern, in, false)
+	opts = append(opts, http.Operation(OperationReviewListReviewByStoreId))
 	opts = append(opts, http.PathTemplate(pattern))
 	err := c.cc.Invoke(ctx, "POST", path, in, &out, opts...)
 	if err != nil {

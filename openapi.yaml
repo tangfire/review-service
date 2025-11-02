@@ -7,7 +7,7 @@ info:
     description: 定义评价服务
     version: 0.0.1
 paths:
-    /v1/review:
+    /v1/review/add:
         post:
             tags:
                 - Review
@@ -26,6 +26,80 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/CreateReviewReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/review/appeal:
+        post:
+            tags:
+                - Review
+            description: 商家申述评价
+            operationId: Review_AppealReview
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AppealReviewRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AppealReviewReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/review/audit_appeal:
+        post:
+            tags:
+                - Review
+            operationId: Review_AuditAppeal
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/AuditAppealRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/AuditAppealReply'
+                default:
+                    description: Default error response
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/Status'
+    /v1/review/list_by_store_id:
+        post:
+            tags:
+                - Review
+            description: 根据商家Id查询评价列表(分页)
+            operationId: Review_ListReviewByStoreId
+            requestBody:
+                content:
+                    application/json:
+                        schema:
+                            $ref: '#/components/schemas/ListReviewByStoreIdRequest'
+                required: true
+            responses:
+                "200":
+                    description: OK
+                    content:
+                        application/json:
+                            schema:
+                                $ref: '#/components/schemas/ListReviewByStoreIdReply'
                 default:
                     description: Default error response
                     content:
@@ -69,55 +143,6 @@ paths:
                         application/json:
                             schema:
                                 $ref: '#/components/schemas/ReplyReviewReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    business/v1/review/appeal:
-        post:
-            tags:
-                - Review
-            description: 商家申述评价
-            operationId: Review_AppealReview
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/AppealReviewRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/AppealReviewReply'
-                default:
-                    description: Default error response
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/Status'
-    operation/v1/api/http:
-        post:
-            tags:
-                - Review
-            operationId: Review_AuditAppeal
-            requestBody:
-                content:
-                    application/json:
-                        schema:
-                            $ref: '#/components/schemas/AuditAppealRequest'
-                required: true
-            responses:
-                "200":
-                    description: OK
-                    content:
-                        application/json:
-                            schema:
-                                $ref: '#/components/schemas/AuditAppealReply'
                 default:
                     description: Default error response
                     content:
@@ -206,6 +231,24 @@ components:
                     description: The type of the serialized message.
             additionalProperties: true
             description: Contains an arbitrary serialized message along with a @type that describes the type of the serialized message.
+        ListReviewByStoreIdReply:
+            type: object
+            properties:
+                list:
+                    type: array
+                    items:
+                        $ref: '#/components/schemas/ReviewInfo'
+        ListReviewByStoreIdRequest:
+            type: object
+            properties:
+                storeId:
+                    type: string
+                page:
+                    type: integer
+                    format: int32
+                size:
+                    type: integer
+                    format: int32
         ReplyReviewReply:
             type: object
             properties:
@@ -226,6 +269,30 @@ components:
                 videoInfo:
                     type: string
             description: 回复评价的请求
+        ReviewInfo:
+            type: object
+            properties:
+                reviewId:
+                    type: string
+                userId:
+                    type: string
+                orderId:
+                    type: string
+                score:
+                    type: integer
+                    format: int32
+                serviceScore:
+                    type: integer
+                    format: int32
+                expressScore:
+                    type: integer
+                    format: int32
+                content:
+                    type: string
+                picInfo:
+                    type: string
+                videoInfo:
+                    type: string
         Status:
             type: object
             properties:

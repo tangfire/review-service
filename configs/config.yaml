@@ -15,3 +15,7 @@ data:
     write_timeout: 0.2s
 snowflake:
   machine_id: 1
+
+elasticsearch:
+  addresses:
+    - "http://127.0.0.1:9200"

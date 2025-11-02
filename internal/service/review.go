@@ -105,6 +105,30 @@ func (s *ReviewService) TestConn(context.Context, *pb.TestConnRequest) (*pb.Test
 	}, nil
 }
 
+func (s *ReviewService) ListReviewByStoreId(ctx context.Context, req *pb.ListReviewByStoreIdRequest) (*pb.ListReviewByStoreIdReply, error) {
+	fmt.Printf("[service] ListReviewByStoreId, req:%+v\n", req)
+	reviewList, err := s.uc.ListReviewByStoreId(ctx, req.StoreId, int(req.Page), int(req.Size))
+	if err != nil {
+		return nil, err
+	}
+	retList := make([]*pb.ReviewInfo, 0, len(reviewList))
+	for _, v := range reviewList {
+		retList = append(retList, &pb.ReviewInfo{
+			ReviewId:     v.ReviewID,
+			UserId:       v.UserID,
+			OrderId:      v.OrderID,
+			Score:        v.Score,
+			ServiceScore: v.ServiceScore,
+			ExpressScore: v.ExpressScore,
+			Content:      v.Content,
+			PicInfo:      v.PicInfo,
+			VideoInfo:    v.VideoInfo,
+		})
+
+	}
+	return &pb.ListReviewByStoreIdReply{List: retList}, nil
+}
+
 func (s *ReviewService) UpdateReview(ctx context.Context, req *pb.UpdateReviewRequest) (*pb.UpdateReviewReply, error) {
 	return &pb.UpdateReviewReply{}, nil
 }

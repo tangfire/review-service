@@ -50,11 +50,42 @@ service Review {
 		};
 	}
 
+	// 根据商家Id查询评价列表(分页)
+	rpc ListReviewByStoreId (ListReviewByStoreIdRequest) returns (ListReviewByStoreIdReply){
+		option (google.api.http) = {
+			post: "/v1/review/list_by_store_id",
+			body: "*"
+		};
+	}
+
+
 
 	rpc UpdateReview (UpdateReviewRequest) returns (UpdateReviewReply);
 	rpc DeleteReview (DeleteReviewRequest) returns (DeleteReviewReply);
 	rpc GetReview (GetReviewRequest) returns (GetReviewReply);
 	rpc ListReview (ListReviewRequest) returns (ListReviewReply);
+}
+
+message ListReviewByStoreIdRequest{
+	int64 storeId = 1 [(validate.rules).int64 = {gt:0}];
+	int32 page = 2 [(validate.rules).int32 = {gt:0}];
+	int32 size = 3 [(validate.rules).int32 = {gt:0}];
+}
+
+message ReviewInfo {
+	int64 reviewId = 1;
+	int64 userId = 2;
+	int64 orderId = 3;
+	int32 score = 4;
+	int32 serviceScore = 5;
+	int32 expressScore = 6;
+	string content = 7;
+	string picInfo = 8;
+	string videoInfo = 9;
+}
+
+message ListReviewByStoreIdReply{
+	repeated ReviewInfo list = 1;
 }
 
 // 创建评价的参数

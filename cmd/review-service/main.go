@@ -2,8 +2,10 @@ package main
 
 import (
 	"flag"
+	kratosLog "github.com/go-kratos/kratos/contrib/log/logrus/v2"
 	"github.com/go-kratos/kratos/v2"
 	"github.com/go-kratos/kratos/v2/registry"
+	"github.com/sirupsen/logrus"
 	"os"
 	"review-service/pkg/snowflake"
 
@@ -52,7 +54,20 @@ func newApp(logger log.Logger, r registry.Registrar, gs *grpc.Server, hs *http.S
 
 func main() {
 	flag.Parse()
-	logger := log.With(log.NewStdLogger(os.Stdout),
+
+	// 创建 logrus logger
+	logrusLogger := logrus.New()
+	logrusLogger.SetOutput(os.Stdout)
+	logrusLogger.SetFormatter(&logrus.TextFormatter{
+		ForceColors:     true,                  // 强制颜色输出
+		FullTimestamp:   true,                  // 完整时间戳
+		TimestampFormat: "2006-01-02 15:04:05", // 时间格式
+	})
+
+	// 使用 Kratos 的 logrus 适配器
+	myLog := kratosLog.NewLogger(logrusLogger)
+
+	logger := log.With(myLog,
 		"ts", log.DefaultTimestamp,
 		"caller", log.DefaultCaller,
 		"service.id", id,
@@ -83,7 +98,7 @@ func main() {
 		panic(err)
 	}
 
-	app, cleanup, err := wireApp(bc.Server, &rc, bc.Data, logger)
+	app, cleanup, err := wireApp(bc.Server, &rc, bc.Data, bc.Elasticsearch, logger)
 	if err != nil {
 		panic(err)
 	}
